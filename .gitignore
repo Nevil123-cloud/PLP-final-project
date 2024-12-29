@@ -102,3 +102,27 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# VSCode workspace specific
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Project specific
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+*.csv
+*.xlsx
+*.pkl
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# IDE specific
+.idea/
+*.swp
+*.swo

@@ -1,86 +1,92 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 from disease_parser import DiseaseOutbreakParser
 from africa_analyzer import AfricaOutbreakAnalyzer
 from visualizer import OutbreakVisualizer
 
 def main():
-    # Read headlines from file
-    print("Reading headlines...")
-    with open("data/headlines.txt", "r") as f:
-        headlines = f.readlines()
+    print("Disease Outbreak Analysis System for East Africa")
+    print("=" * 50)
     
     # Initialize parser
-    print("\nInitializing parser...")
+    print("\n1. Initializing parser...")
     parser = DiseaseOutbreakParser()
     
+    # Read headlines from file
+    print("2. Reading headlines...")
+    try:
+        with open("data/headlines.txt", "r") as f:
+            headlines = f.readlines()
+        print(f"   Successfully loaded {len(headlines)} headlines")
+    except FileNotFoundError:
+        print("Error: headlines.txt not found in data directory")
+        return
+    
     # Parse headlines
-    print("Parsing headlines...")
+    print("\n3. Parsing headlines and extracting information...")
     df = parser.process_headlines(headlines)
+    print(f"   Processed {len(df)} entries")
     
     # Initialize analyzer
-    print("\nAnalyzing data...")
+    print("\n4. Analyzing outbreak patterns...")
     analyzer = AfricaOutbreakAnalyzer(df)
     
     # Get summary statistics for different regions
-    print("\nSummary Statistics:")
+    print("\n5. Summary Statistics:")
     
-    print("\nUganda:")
-    uganda_stats = analyzer.get_summary_statistics(region='uganda')
-    for key, value in uganda_stats.items():
-        print(f"{key}: {value}")
+    regions = ['uganda', 'east_africa']
+    for region in regions:
+        print(f"\n{region.upper()}:")
+        stats = analyzer.get_summary_statistics(region=region)
         
-    print("\nEast Africa:")
-    ea_stats = analyzer.get_summary_statistics(region='east_africa')
-    for key, value in ea_stats.items():
-        print(f"{key}: {value}")
+        print(f"   Total Outbreaks: {stats['total_outbreaks']}")
+        print(f"   Unique Diseases: {stats['unique_diseases']}")
+        print(f"   Date Range: {stats['date_range']['first_outbreak']} to {stats['date_range']['latest_outbreak']}")
+        print("\n   Severity Distribution:")
+        for severity, count in stats['severity_distribution'].items():
+            print(f"   - {severity}: {count}")
     
-    # Get high priority outbreaks in East Africa
-    print("\nHigh Priority Outbreaks in East Africa:")
-    high_priority_ea = analyzer.get_high_priority_outbreaks(region='east_africa')
-    if not high_priority_ea.empty:
-        print(high_priority_ea[['headline', 'disease', 'severity', 'date']])
+    # Get high priority outbreaks
+    print("\n6. High Priority Outbreaks in Uganda:")
+    high_priority_ug = analyzer.get_high_priority_outbreaks(region='uganda')
+    if not high_priority_ug.empty:
+        print("\nRecent high-priority outbreaks:")
+        for _, row in high_priority_ug.iterrows():
+            print(f"   {row['date'].strftime('%Y-%m-%d')}: {row['disease']} - {row['severity']}")
+            print(f"   Location: {row['location'].get('city', 'Unknown')}, {row['location'].get('country', 'Unknown')}")
+            print(f"   Headline: {row['headline']}\n")
     else:
-        print("No high priority outbreaks found in East Africa")
+        print("   No high priority outbreaks found in Uganda")
     
-    # Initialize visualizer
-    print("\nGenerating visualizations...")
+    # Initialize visualizer and create visualizations
+    print("\n7. Generating visualizations...")
     visualizer = OutbreakVisualizer(df)
     
-    # Create visualizations
-    print("1. Disease Distribution in East Africa")
+    print("   Creating disease distribution plots...")
     visualizer.plot_disease_distribution(region='east_africa')
-    plt.savefig('disease_distribution_ea.png')
-    plt.close()
+    visualizer.plot_disease_distribution(region='uganda')
     
-    print("2. Outbreak Severity in Uganda")
+    print("   Creating severity distribution plots...")
+    visualizer.plot_severity_distribution(region='east_africa')
     visualizer.plot_severity_distribution(region='uganda')
-    plt.savefig('severity_distribution_uganda.png')
-    plt.close()
     
-    print("3. Temporal Trends in East Africa")
+    print("   Creating temporal trend plots...")
     visualizer.plot_temporal_trends(region='east_africa')
-    plt.savefig('temporal_trends_ea.png')
-    plt.close()
+    visualizer.plot_temporal_trends(region='uganda')
     
-    print("4. East Africa Map")
+    print("   Creating East Africa map...")
     visualizer.plot_east_africa_map()
-    plt.savefig('east_africa_map.png')
-    plt.close()
     
-    print("5. Disease Severity Heatmap for Uganda")
+    print("   Creating disease severity heatmaps...")
+    visualizer.plot_disease_severity_heatmap(region='east_africa')
     visualizer.plot_disease_severity_heatmap(region='uganda')
-    plt.savefig('disease_severity_heatmap_uganda.png')
-    plt.close()
     
-    print("\nAnalysis complete. Visualizations have been saved as PNG files.")
-    print("\nKey findings:")
-    print(f"- Total outbreaks in East Africa: {ea_stats['total_outbreaks']}")
-    print(f"- Most common disease in East Africa: {ea_stats['most_common_disease']}")
-    print(f"- High severity outbreaks in East Africa: {ea_stats['high_severity_count']}")
-    print(f"- Total outbreaks in Uganda: {uganda_stats['total_outbreaks']}")
-    print(f"- Most common disease in Uganda: {uganda_stats['most_common_disease']}")
-    print(f"- High severity outbreaks in Uganda: {uganda_stats['high_severity_count']}")
+    print("\n8. Analysis complete!")
+    print("   Visualization files have been generated in the current directory:")
+    print("   - disease_distribution_*.png")
+    print("   - severity_distribution_*.png")
+    print("   - temporal_trends_*.png")
+    print("   - east_africa_map.png")
+    print("   - disease_severity_heatmap_*.png")
 
 if __name__ == "__main__":
     main()
